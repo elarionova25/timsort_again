@@ -1,1 +1,136 @@
+#include<bits/stdc++.h>
+using namespace std;
 
+int n;
+
+int GetMinrun(int n) //получение minrun
+{
+    int r = 0;
+    int RUN;
+    while (n >= 64) {
+        r |= n & 1;
+        n >>= 1;
+    }
+    return n + r;
+}
+
+int RUN = GetMinrun(n);
+
+void printArray(int arr[], int n) //вывод массива
+{
+    for (int i = 0; i < n; i++)
+        printf("%d  ", arr[i]);
+    printf("\n");
+}
+
+void insertionSort(int arr[], int left, int right) //сортировка вставками подмассивов размера minrun=RUN
+{
+    for (int i = left + 1; i <= right; i++)
+    {
+        int temp = arr[i];
+        int j = i - 1;
+        while (arr[j] > temp && j >= left)
+        {
+            arr[j+1] = arr[j];
+            j--;
+        }
+        arr[j+1] = temp;
+    }
+}
+
+
+void merge(int arr[], int l, int m, int r) //сортировка слиянием отсортированных подмассивов
+{
+    int len1 = m - l + 1, len2 = r - m;
+    int left[len1], right[len2];
+    for (int i = 0; i < len1; i++)
+        left[i] = arr[l + i];
+    for (int i = 0; i < len2; i++)
+        right[i] = arr[m + 1 + i];
+
+    int i = 0;
+    int j = 0;
+    int k = l;
+
+    while (i < len1 && j < len2)
+    {
+        if (left[i] <= right[j])
+        {
+            arr[k] = left[i];
+            i++;
+        }
+        else
+        {
+            arr[k] = right[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < len1)
+    {
+        arr[k] = left[i];
+        k++;
+        i++;
+    }
+
+    while (j < len2)
+    {
+        arr[k] = right[j];
+        k++;
+        j++;
+    }
+}
+
+
+void timSort(int arr[], int n, int RUN)  //функция тимсорта
+{
+    for (int i = 0; i < n; i+=RUN)    //цикл,чтобы получить подмассивы и отсортировать их
+        insertionSort(arr, i, min(i+(RUN-1), (n-1)));
+
+    cout<<"After insertion Array:"<<endl;
+    printArray(arr, n);
+
+    for (int size = RUN; size < n; size = 2*size) //цикл, для слияния двух подмассивов
+    {
+        for (int left = 0; left < n; left += 2*size)
+        {
+            int mid = left + size - 1;
+            int right = min((left + 2*size - 1), (n-1));
+            merge(arr, left, mid, right);
+        }
+    }
+}
+
+
+int main()
+{
+    int n;
+    cout<<"enter the size of mass";
+    cin>>n;
+    int arr[n];
+    int i=0;
+    srand(time(NULL));
+
+    for(int i=0;i<n;i++)
+    {
+        arr[i]=rand() % 10000;
+    }
+
+    cout<<"ur entered mass"<<endl;
+    printArray(arr,n);
+
+    cout<<"the size of mass:"<<n<<endl;
+
+    int RUN = GetMinrun(n);
+    cout<<"the minRun is:"<< RUN<< endl;
+
+    cout<<"Given Array is:"<<endl;
+    printArray(arr, n);
+
+    timSort(arr, n, RUN);
+
+    cout<<"Completely sorted Array:"<<endl;
+    printArray(arr, n);
+    return 0;
+}
